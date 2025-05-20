@@ -7,6 +7,9 @@ import express from 'express';
 import morgan from 'morgan';
 import pool from './plugins/db';
 import authRoutes from './routes/auth';
+import usersRoutes from './routes/users';
+import playsRoutes from './routes/plays';
+import gamesRoutes from './routes/games';
 
 const app = express();
 
@@ -33,5 +36,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/plays', playsRoutes);
+app.use('/api/games', gamesRoutes);
 
 export default app;
