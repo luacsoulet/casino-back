@@ -3,14 +3,11 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import { validateRequiredFields } from '../utils/validators';
-
-const handleError = (res: Response, error: any, message: string) => {
-    res.status(500).json({ message, error: error.message });
-};
+import { handleError, throwBadRequest, throwUnauthorized } from '../utils/errorHandler';
 
 const findUserByUsername = async (username: string) => {
     return await pool.query(
-        'SELECT id, username, password_hash, is_admin FROM users WHERE username = $1',
+        'SELECT id, username, password_hash, is_admin, virtual_balance FROM users WHERE username = $1',
         [username]
     );
 };
@@ -38,14 +35,13 @@ export const createUser = async (req: Request, res: Response) => {
         }
         const existingUser = await findUserByUsername(username);
         if (existingUser.rows.length > 0) {
-            res.status(400).json({ message: 'User already exists' });
-            return;
+            throwBadRequest('A user with this username already exists');
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         await createUserInDb(username, hashedPassword);
         res.status(201).json({ message: 'User created successfully' });
-    } catch (error: any) {
-        handleError(res, error, 'Error creating user');
+    } catch (error) {
+        handleError(res, error, 'Error while creating the user');
     }
 };
 
@@ -57,24 +53,24 @@ export const loginUser = async (req: Request, res: Response) => {
         }
         const user = await findUserByUsername(username);
         if (user.rows.length === 0) {
-            res.status(401).json({ message: 'Invalid username or password' });
-            return;
+            throwUnauthorized('Username or password incorrect');
         }
         const isPasswordValid = await bcrypt.compare(password, user.rows[0].password_hash);
         if (!isPasswordValid) {
-            res.status(401).json({ message: 'Invalid username or password' });
-            return;
+            throwUnauthorized('Username or password incorrect');
         }
         const token = generateToken(user.rows[0].id, user.rows[0].is_admin);
-        res.status(200).json({
+        const responseData = {
             token,
             user: {
                 id: user.rows[0].id,
                 username: user.rows[0].username,
+                virtual_balance: user.rows[0].virtual_balance,
                 isAdmin: user.rows[0].is_admin
             }
-        });
-    } catch (error: any) {
-        handleError(res, error, 'Error during login');
+        };
+        res.status(200).json(responseData);
+    } catch (error) {
+        handleError(res, error, 'Error while logging in');
     }
 };
