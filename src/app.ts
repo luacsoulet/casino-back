@@ -5,11 +5,14 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 import express from 'express';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger';
 import pool from './plugins/db';
 import authRoutes from './routes/auth';
 import usersRoutes from './routes/users';
 import playsRoutes from './routes/plays';
 import gamesRoutes from './routes/games';
+import adminRoutes from './routes/admin';
 
 const app = express();
 
@@ -35,6 +38,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan('dev'));
 
+// Documentation Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Casino Game API Documentation'
+}));
+
+app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/plays', playsRoutes);
