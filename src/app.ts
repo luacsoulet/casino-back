@@ -5,6 +5,7 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 import express from 'express';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger';
 import pool from './plugins/db';
@@ -26,6 +27,14 @@ db.connect()
         console.log(err);
     });
 
+const limiter = rateLimit({
+    windowMs: 5 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP, please try again in 15 minutes'
+});
+
+app.use(limiter);
+
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -38,7 +47,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan('dev'));
 
-// Documentation Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Casino Game API Documentation'
