@@ -220,5 +220,58 @@ export const adminSwagger = {
                 }
             }
         }
+    },
+    '/admin/users/:userId/promote': {
+        post: {
+            summary: 'Promote user to admin',
+            description: 'Promote a user to admin (admin only)',
+            tags: ['Admin'],
+            security: [{ bearerAuth: [] }],
+            parameters: [
+                {
+                    in: 'path',
+                    name: 'userId',
+                    required: true,
+                    schema: {
+                        type: 'integer'
+                    },
+                    description: 'ID of the user to promote',
+                    example: 1
+                }
+            ],
+            responses: {
+                200: {
+                    description: 'User successfully promoted to admin',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    message: {
+                                        type: 'string',
+                                        example: 'User promoted to admin successfully'
+                                    },
+                                    user: {
+                                        $ref: '#/components/schemas/User'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                401: {
+                    $ref: '#/components/responses/Unauthorized'
+                },
+                403: {
+                    $ref: '#/components/responses/Forbidden'
+                },
+                404: {
+                    $ref: '#/components/responses/NotFound'
+                },
+                500: {
+                    $ref: '#/components/responses/ServerError'
+                }
+            }
+        }
     }
 }; 

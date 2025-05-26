@@ -85,6 +85,7 @@ export const deleteGame = async (req: Request, res: Response) => {
 
 export const promoteToAdmin = async (req: Request, res: Response) => {
     const { userId } = req.params;
+    console.log('userId', userId, 'req.params', req.params);
     try {
         const updatedUser = await promoteUserInDb(userId);
         res.status(200).json(updatedUser.rows[0]);
