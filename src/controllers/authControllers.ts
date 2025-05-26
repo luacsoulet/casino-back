@@ -15,7 +15,7 @@ const findUserByUsername = async (username: string) => {
 const createUserInDb = async (username: string, hashedPassword: string) => {
     return await pool.query(
         'INSERT INTO users (username, password_hash, virtual_balance) VALUES ($1, $2, $3)',
-        [username, hashedPassword, 0]
+        [username, hashedPassword, 1000]
     );
 };
 
